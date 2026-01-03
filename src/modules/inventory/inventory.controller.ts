@@ -39,22 +39,65 @@ export class InventoryController {
 
   @MessagePattern(INVENTORY_PATTERNS.FIND_ONE)
   findOne(@Payload() payload: any) {
-    const id = payload.id || payload;
+    const id = payload?.params?.id;
     this.logger.log(`Received message pattern: ${INVENTORY_PATTERNS.FIND_ONE} for ID: ${id}`);
     return this.inventoryService.findOne(id);
   }
 
   @MessagePattern(INVENTORY_PATTERNS.UPDATE)
-  update(@Payload() payload: any) {
+  async update(@Payload() payload: any) {
     const id = payload.id || payload.params?.id;
     this.logger.log(`Received message pattern: ${INVENTORY_PATTERNS.UPDATE} for ID: ${id}`);
-    return this.inventoryService.update(id, payload.body || payload);
+    
+    try {
+      return await this.inventoryService.update(id, payload.body || payload);
+    } catch (error) {
+      this.logger.error(`Error in update: ${error.message}`);
+      throw error;
+    }
   }
 
   @MessagePattern(INVENTORY_PATTERNS.REMOVE)
   remove(@Payload() payload: any) {
-    const id = payload.id || payload;
+    const id = payload.params?.id || payload;
     this.logger.log(`Received message pattern: ${INVENTORY_PATTERNS.REMOVE} for ID: ${id}`);
     return this.inventoryService.remove(id);
+  }
+
+  @MessagePattern(INVENTORY_PATTERNS.FIND_BY_SKU)
+  findBySku(@Payload() payload: any) {
+    const sku = payload?.sku || payload?.params?.sku || payload;
+    this.logger.log(`Received message pattern: ${INVENTORY_PATTERNS.FIND_BY_SKU} for SKU: ${sku}`);
+    return this.inventoryService.findBySku(sku);
+  }
+
+  @MessagePattern(INVENTORY_PATTERNS.RESERVE)
+  reserve(@Payload() payload: any) {
+    this.logger.log(`Received message pattern: ${INVENTORY_PATTERNS.RESERVE}`);
+    return this.inventoryService.reserve(payload);
+  }
+
+  @MessagePattern(INVENTORY_PATTERNS.RELEASE)
+  release(@Payload() payload: any) {
+    this.logger.log(`Received message pattern: ${INVENTORY_PATTERNS.RELEASE}`);
+    return this.inventoryService.release(payload);
+  }
+
+  @MessagePattern(INVENTORY_PATTERNS.OUT_OF_STOCK)
+  getOutOfStock() {
+    this.logger.log(`Received message pattern: ${INVENTORY_PATTERNS.OUT_OF_STOCK}`);
+    return this.inventoryService.getOutOfStock();
+  }
+
+  @EventPattern(INVENTORY_EVENTS.RESERVED)
+  async handleInventoryReserved(@Payload() data: any) {
+    this.logger.log(`Received event: ${INVENTORY_EVENTS.RESERVED}`);
+    this.logger.log(`Inventory reserved: ${JSON.stringify(data)}`);
+  }
+
+  @EventPattern(INVENTORY_EVENTS.RELEASED)
+  async handleInventoryReleased(@Payload() data: any) {
+    this.logger.log(`Received event: ${INVENTORY_EVENTS.RELEASED}`);
+    this.logger.log(`Inventory released: ${JSON.stringify(data)}`);
   }
 }

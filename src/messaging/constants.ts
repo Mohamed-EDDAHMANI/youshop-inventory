@@ -23,10 +23,12 @@ export const INVENTORY_PATTERNS = {
   UPDATE: 'inventory/update',
   FIND_ONE: 'inventory/find-one',
   FIND_ALL: 'inventory/find-all',
+  FIND_BY_SKU: 'inventory/find-by-sku',
   REMOVE: 'inventory/remove',
   CHECK_AVAILABILITY: 'inventory/check-availability',
   RESERVE: 'inventory/reserve',
   RELEASE: 'inventory/release',
+  OUT_OF_STOCK: 'inventory/out-of-stock',
 } as const;
 
 // Inventory Event Patterns
@@ -36,4 +38,5 @@ export const INVENTORY_EVENTS = {
   RESERVED: 'inventory.reserved',
   RELEASED: 'inventory.released',
   LOW_STOCK: 'inventory.low-stock',
+  PRODUCT_DELETED: 'inventory.product-deleted',
 } as const;

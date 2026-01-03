@@ -24,6 +24,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
         exception.statusCode,
         exception.details,
       );
+      
+      // For RPC context, throw RpcException with formatted response
+      throw new RpcException(errorResponse);
     }
     // Handle NestJS HttpException
     else if (exception instanceof HttpException) {
@@ -44,6 +47,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       this.logger.warn(`[${code}] ${message}`);
 
       errorResponse = this.formatErrorResponse(code, message, status, details);
+      throw new RpcException(errorResponse);
     }
     // Handle RPC exceptions (from microservices)
     else if (exception instanceof RpcException) {
@@ -56,6 +60,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         503,
         error,
       );
+      throw new RpcException(errorResponse);
     }
     // Handle standard Error
     else if (exception instanceof Error) {
@@ -67,6 +72,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         500,
         { originalError: exception.message },
       );
+      throw new RpcException(errorResponse);
     }
     // Handle unknown errors
     else {
@@ -78,11 +84,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
         500,
         { error: exception },
       );
+      throw new RpcException(errorResponse);
     }
-
-    // For RPC context, throw the error as RpcException
-    // NestJS will automatically serialize and send it to the caller
-    throw new RpcException(errorResponse);
   }
 
   /**
