@@ -98,12 +98,13 @@ export class InventoryService {
     }
   }
 
-  async findOne(id: string): Promise<ApiResponse<any>> {
+  async findOne(sku: string): Promise<ApiResponse<any>> {
     try {
       // this.logger.log(`Finding inventory for ID: ${JSON.stringify(id)}`);
-      const sku = `PROD-${id}`; // Assuming SKU format is 'PROD-<id>'
+      // const sku = `PROD-${id}`; // Assuming SKU format is 'PROD-<id>'
+      // this.logger.debug(`Finding inventory by SKU: ${sku} or ID: ${id}`);
 
-      if (!id) {
+      if (!sku) {
         throw new ValidationException('ID or SKU is required');
       }
 
@@ -115,14 +116,14 @@ export class InventoryService {
           where: { sku },
         });
       } else {
-        this.logger.log(`Finding inventory by ID: ${id}`);
+        this.logger.log(`Finding inventory by ID: ${sku}`);
         inventory = await this.prisma.inventory.findUnique({
-          where: { id },
+          where: { sku },
         });
       }
 
       if (!inventory) {
-        throw new ResourceNotFoundException('Inventory', sku || id);
+        throw new ResourceNotFoundException('Inventory', sku);
       }
 
       return {

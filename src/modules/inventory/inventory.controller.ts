@@ -39,9 +39,10 @@ export class InventoryController {
 
   @MessagePattern(INVENTORY_PATTERNS.FIND_ONE)
   findOne(@Payload() payload: any) {
-    const id = payload?.params?.id;
-    this.logger.log(`Received message pattern: ${INVENTORY_PATTERNS.FIND_ONE} for ID: ${id}`);
-    return this.inventoryService.findOne(id);
+    const sku = payload?.sku;
+    const ids = payload;
+    this.logger.log(`Received message pattern: ${INVENTORY_PATTERNS.FIND_ONE} for ID: ${JSON.stringify(ids)}`);
+    return this.inventoryService.findOne(sku);
   }
 
   @MessagePattern(INVENTORY_PATTERNS.UPDATE)

@@ -1,68 +1,69 @@
-/**
- * Standard API Error Response
- */
-export interface ApiErrorResponse {
-  success: false;
-  error: {
-    code: string;
-    message: string;
-    statusCode: number;
-    details?: any;
-  };
-  timestamp: string;
-}
+export class ServiceError extends Error {
+  public readonly success: boolean;
+  public readonly errorType: string;
+  public readonly message: string;
+  public readonly code: number;
+  public readonly serviceName: string;
+  public readonly details?: any;
+  public readonly timestamp: string;
 
-/**
- * Custom application exceptions
- */
-export class AppException extends Error {
   constructor(
-    public code: string,
-    public message: string,
-    public statusCode: number,
-    public details?: any,
+    errorType: string,
+    message: string,
+    code: number,
+    serviceName: string = 'inventory-service',
+    details?: any,
   ) {
     super(message);
-    this.name = this.constructor.name;
+    this.success = false;
+    this.errorType = errorType;
+    this.message = message;
+    this.code = code;
+    this.serviceName = serviceName;
+    this.details = details;
+    this.timestamp = new Date().toISOString();
+  }
+
+  toJSON() {
+    return {
+      success: this.success,
+      error: {
+        type: this.errorType,
+        message: this.message,
+        code: this.code,
+        serviceName: this.serviceName,
+        ...(this.details && { details: this.details }),
+      },
+      timestamp: this.timestamp,
+    };
   }
 }
 
-export class ValidationException extends AppException {
+export class ValidationException extends ServiceError {
   constructor(message: string, details?: any) {
-    super('VALIDATION_ERROR', message, 400, details);
+    super('VALIDATION_ERROR', message, 400, 'inventory-service', details);
   }
 }
 
-export class ResourceNotFoundException extends AppException {
-  constructor(resource: string, identifier: string) {
+export class ResourceNotFoundException extends ServiceError {
+  constructor(resource: string, id: string | number) {
     super(
       'RESOURCE_NOT_FOUND',
-      `${resource} with ID ${identifier} not found`,
+      `${resource} with identifier ${id} not found`,
       404,
-      { resource, identifier },
+      'inventory-service',
     );
   }
 }
 
-export class ConflictException extends AppException {
-  constructor(message: string, details?: any) {
-    super('CONFLICT', message, 409, details);
+export class ConflictException extends ServiceError {
+  constructor(message: string) {
+    super('CONFLICT_ERROR', message, 409, 'inventory-service');
   }
 }
 
-export class InternalServerException extends AppException {
-  constructor(message: string, details?: any) {
-    super('INTERNAL_SERVER_ERROR', message, 500, details);
-  }
-}
-
-export class ServiceUnavailableException extends AppException {
-  constructor(service: string, message?: string) {
-    super(
-      'SERVICE_UNAVAILABLE',
-      message || `${service} service is currently unavailable`,
-      503,
-      { service },
-    );
+export class InternalServerException extends ServiceError {
+  constructor(message: string) {
+    super('INTERNAL_SERVER_ERROR', message, 500, 'inventory-service');
   }
 }
